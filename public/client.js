@@ -7,7 +7,6 @@ const messages = document.getElementById("messages");
 const name = prompt("名前を入力してください") || "ゲスト";
 socket.emit("join", name);
 
-// 文字 or 画像送信
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -25,7 +24,6 @@ form.addEventListener("submit", (e) => {
   }
 });
 
-// メッセージ受信
 socket.on("chat", ({ from, text, image, ts }) => {
   const li = document.createElement("li");
   li.className = from === name ? "me" : "other";
@@ -40,7 +38,6 @@ socket.on("chat", ({ from, text, image, ts }) => {
   messages.scrollTop = messages.scrollHeight;
 });
 
-// システムメッセージ
 socket.on("system", (msg) => {
   const li = document.createElement("li");
   li.className = "system";
