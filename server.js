@@ -16,15 +16,10 @@ app.use(express.json());
 app.use(fileUpload());
 app.use(express.static("public"));
 
-// --- パスワード入力フォームページ ---
+// --- パスワードフォーム（常に表示） ---
 app.get("/", (req, res) => {
-  if (req.cookies.auth === "true") {
-    // 認証済みなら直接チャットへ
-    return res.redirect("/chat");
-  }
-  // フォーム表示
   res.send(`
-    <h2>パスワードを入力してください</h2>
+    <h2>チャット入室パスワード</h2>
     <form method="POST" action="/login">
       <input name="password" placeholder="パスワード" type="password" required />
       <button>入室</button>
@@ -34,8 +29,7 @@ app.get("/", (req, res) => {
 
 // --- パスワードチェック ---
 app.post("/login", (req, res) => {
-  const pw = req.body.password;
-  if (pw === PASSWORD) {
+  if (req.body.password === PASSWORD) {
     res.cookie("auth", "true", { httpOnly: true });
     res.redirect("/chat");
   } else {
@@ -43,7 +37,7 @@ app.post("/login", (req, res) => {
   }
 });
 
-// --- チャット画面（認証必須） ---
+// --- チャット画面（認証済みのみ） ---
 app.get("/chat", (req, res) => {
   if (req.cookies.auth !== "true") return res.redirect("/");
   res.sendFile(new URL("./public/index.html", import.meta.url).pathname);
@@ -55,7 +49,6 @@ app.post("/upload", (req, res) => {
 
   const image = req.files.image;
   const uploadPath = `public/uploads/${image.name}`;
-
   image.mv(uploadPath, (err) => {
     if (err) return res.status(500).send(err);
     io.emit("chat", { from: "画像", image: `/uploads/${image.name}`, ts: Date.now() });
