@@ -2,6 +2,7 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import fileUpload from "express-fileupload";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const server = http.createServer(app);
@@ -9,6 +10,7 @@ const io = new Server(server);
 
 const PASSWORD = "114514";
 
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(fileUpload());
@@ -28,14 +30,16 @@ app.get("/", (req, res) => {
 app.post("/login", (req, res) => {
   const pw = req.body.password;
   if (pw === PASSWORD) {
+    res.cookie("auth", "true", { httpOnly: true });
     res.redirect("/chat");
   } else {
     res.send("パスワードが違います。<a href='/'>戻る</a>");
   }
 });
 
-// チャット画面
+// チャット画面（認証必須）
 app.get("/chat", (req, res) => {
+  if (req.cookies.auth !== "true") return res.redirect("/");
   res.sendFile(new URL("./public/index.html", import.meta.url).pathname);
 });
 
