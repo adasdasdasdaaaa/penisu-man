@@ -10,11 +10,25 @@
 <body>
   <div class="chat-container">
     <ul id="messages"></ul>
+
+    <!-- 通話ボタンを追加 -->
+    <div style="padding:8px; text-align:center;">
+      <button id="callButton">通話を開始</button>
+    </div>
+
     <form id="form">
       <input id="input" placeholder="メッセージを入力..." autocomplete="off" />
       <input id="imageInput" type="file" accept="image/*" />
       <button>送信</button>
     </form>
   </div>
+
+  <script>
+    // 通話ボタンの挙動
+    const callButton = document.getElementById("callButton");
+    callButton.addEventListener("click", () => {
+      window.open("https://sfu.mirotalk.com/join/?room=maikurakekennkani", "_blank");
+    });
+  </script>
 </body>
 </html>
