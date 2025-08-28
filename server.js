@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
+import fileUpload from "express-fileupload";
 
 const app = express();
 const server = http.createServer(app);
@@ -8,9 +9,10 @@ const io = new Server(server);
 
 const PASSWORD = "114514";
 
-// POSTデータを解析するミドルウェア
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(fileUpload());
+app.use(express.static("public"));
 
 // パスワード入力ページ
 app.get("/", (req, res) => {
@@ -37,8 +39,19 @@ app.get("/chat", (req, res) => {
   res.sendFile(new URL("./public/index.html", import.meta.url).pathname);
 });
 
-// 静的ファイル
-app.use(express.static("public"));
+// 画像アップロード
+app.post("/upload", (req, res) => {
+  if (!req.files || !req.files.image) return res.status(400).send("No file uploaded");
+
+  const image = req.files.image;
+  const uploadPath = `public/uploads/${image.name}`;
+
+  image.mv(uploadPath, (err) => {
+    if (err) return res.status(500).send(err);
+    io.emit("chat", { from: "画像", image: `/uploads/${image.name}`, ts: Date.now() });
+    res.send("OK");
+  });
+});
 
 // Socket.IO
 io.on("connection", (socket) => {
@@ -49,7 +62,7 @@ io.on("connection", (socket) => {
 
   socket.on("chat", (msg) => {
     if (!socket.data.name) return;
-    io.emit("chat", { from: socket.data.name, text: msg, ts: Date.now() });
+    io.emit("chat", { from: socket.data.name, text: msg.text, image: msg.image, ts: Date.now() });
   });
 
   socket.on("disconnect", () => {
