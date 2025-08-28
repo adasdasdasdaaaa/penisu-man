@@ -1,17 +1,18 @@
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
-import bodyParser from "body-parser";
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PASSWORD = "114514"; // 固定パスワード
+const PASSWORD = "114514";
 
-app.use(bodyParser.urlencoded({ extended: true }));
+// POSTデータを解析するミドルウェア
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// パスワード確認ページ
+// パスワード入力ページ
 app.get("/", (req, res) => {
   res.send(`
     <form method="POST" action="/login">
@@ -25,20 +26,21 @@ app.get("/", (req, res) => {
 app.post("/login", (req, res) => {
   const pw = req.body.password;
   if (pw === PASSWORD) {
-    res.redirect("/chat"); // 正しいときチャット画面へ
+    res.redirect("/chat");
   } else {
     res.send("パスワードが違います。<a href='/'>戻る</a>");
   }
 });
 
-// チャット画面をパスワード認証済みのみ表示
+// チャット画面
 app.get("/chat", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+  res.sendFile(new URL("./public/index.html", import.meta.url).pathname);
 });
 
-app.use(express.static("public")); // CSSやJS
+// 静的ファイル
+app.use(express.static("public"));
 
-// Socket.IO部分は以前と同じ
+// Socket.IO
 io.on("connection", (socket) => {
   socket.on("join", (name) => {
     socket.data.name = name || "ゲスト";
