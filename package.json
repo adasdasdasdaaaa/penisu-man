@@ -1,5 +1,5 @@
 {
-  "name": "line-style-chat",
+  "name": "simple-line-chat",
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
