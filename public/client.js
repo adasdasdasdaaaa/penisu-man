@@ -11,13 +11,11 @@ socket.emit("join", name);
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  // テキスト送信
   if (input.value) {
     socket.emit("chat", { text: input.value });
     input.value = "";
   }
 
-  // 画像送信
   if (imageInput.files.length > 0) {
     const file = imageInput.files[0];
     const formData = new FormData();
