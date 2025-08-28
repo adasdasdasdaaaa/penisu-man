@@ -16,17 +16,23 @@ app.use(express.json());
 app.use(fileUpload());
 app.use(express.static("public"));
 
-// パスワード入力ページ
+// --- パスワード入力フォームページ ---
 app.get("/", (req, res) => {
+  if (req.cookies.auth === "true") {
+    // 認証済みなら直接チャットへ
+    return res.redirect("/chat");
+  }
+  // フォーム表示
   res.send(`
+    <h2>パスワードを入力してください</h2>
     <form method="POST" action="/login">
-      <input name="password" placeholder="パスワード" type="password" />
+      <input name="password" placeholder="パスワード" type="password" required />
       <button>入室</button>
     </form>
   `);
 });
 
-// パスワードチェック
+// --- パスワードチェック ---
 app.post("/login", (req, res) => {
   const pw = req.body.password;
   if (pw === PASSWORD) {
@@ -37,13 +43,13 @@ app.post("/login", (req, res) => {
   }
 });
 
-// チャット画面（認証必須）
+// --- チャット画面（認証必須） ---
 app.get("/chat", (req, res) => {
   if (req.cookies.auth !== "true") return res.redirect("/");
   res.sendFile(new URL("./public/index.html", import.meta.url).pathname);
 });
 
-// 画像アップロード
+// --- 画像アップロード ---
 app.post("/upload", (req, res) => {
   if (!req.files || !req.files.image) return res.status(400).send("No file uploaded");
 
@@ -57,7 +63,7 @@ app.post("/upload", (req, res) => {
   });
 });
 
-// Socket.IO
+// --- Socket.IO ---
 io.on("connection", (socket) => {
   socket.on("join", (name) => {
     socket.data.name = name || "ゲスト";
